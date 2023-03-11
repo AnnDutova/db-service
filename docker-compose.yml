@@ -1,0 +1,29 @@
+version: "3.8"
+services:
+  reverse-proxy:
+    image: traefik:v2.2
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker"
+      - "--providers.docker.exposedByDefault=false"
+    ports:
+      - "80:80"
+      - "8000:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  auth:
+    build:
+      context: ./auth-service
+      target: builder
+    image: auth
+    env_file: .env.dev
+    expose:
+      - "8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`malcorp.test`) && PathPrefix(`/api/auth`)"
+    environment:
+      - ENV=dev
+    volumes:
+      - ./auth-service:/go/src/app
+    command: reflex -r "\.go$$" -s -- sh -c "go run ./cmd/main.go"

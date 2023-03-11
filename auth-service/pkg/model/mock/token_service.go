@@ -1,0 +1,30 @@
+package mock
+
+import (
+	"context"
+
+	"github.com/stretchr/testify/mock"
+
+	"auth-service/api/pkg/model"
+)
+
+type MockTokenService struct {
+	mock.Mock
+}
+
+func (m *MockTokenService) NewToken(ctx context.Context, u *model.User, prevTokenID string) (*model.Token, error) {
+	ret := m.Called(ctx, u, prevTokenID)
+
+	var r0 *model.Token
+	if ret.Get(0) != nil {
+		r0 = ret.Get(0).(*model.Token)
+	}
+
+	var r1 error
+
+	if ret.Get(1) != nil {
+		r1 = ret.Get(1).(error)
+	}
+
+	return r0, r1
+}
