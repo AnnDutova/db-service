@@ -43,3 +43,24 @@ func (s *userService) Signup(ctx context.Context, u *model.User) error {
 
 	return nil
 }
+
+func (s *userService) Signin(ctx context.Context, u *model.User) error {
+	uFetched, err := s.UserRepository.FindByEmail(ctx, u.Email)
+
+	if err != nil {
+		return model.UnauthorizedError("Invalid email and password combination")
+	}
+
+	match, err := comparePasswords(uFetched.Password, u.Password)
+
+	if err != nil {
+		return model.InternalError()
+	}
+
+	if !match {
+		return model.UnauthorizedError("Invalid email and password combination")
+	}
+
+	*u = *uFetched
+	return nil
+}

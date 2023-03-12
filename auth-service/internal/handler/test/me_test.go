@@ -1,6 +1,7 @@
-package handler
+package test
 
 import (
+	"auth-service/api/internal/handler"
 	"auth-service/api/pkg/model"
 	"auth-service/api/pkg/model/mock"
 	"encoding/json"
@@ -44,7 +45,7 @@ func TestMe(t *testing.T) {
 			)
 		})
 
-		NewHandler(&Config{
+		handler.NewHandler(&handler.Config{
 			R:           router,
 			UserService: mockUserService,
 		})
@@ -73,7 +74,7 @@ func TestMe(t *testing.T) {
 
 		// do not append user to context
 		router := gin.Default()
-		NewHandler(&Config{
+		handler.NewHandler(&handler.Config{
 			R:           router,
 			UserService: mockUserService,
 		})
@@ -103,7 +104,7 @@ func TestMe(t *testing.T) {
 			)
 		})
 
-		NewHandler(&Config{
+		handler.NewHandler(&handler.Config{
 			R:           router,
 			UserService: mockUserService,
 		})

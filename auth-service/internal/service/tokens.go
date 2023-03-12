@@ -2,6 +2,7 @@ package service
 
 import (
 	"crypto/rsa"
+	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"log"
@@ -15,7 +16,7 @@ type IDTokenCustomClaims struct {
 	jwt.RegisteredClaims
 }
 
-func generateIDToken(u *model.User, key *rsa.PrivateKey, exp int64) (string, error) {
+func GenerateIDToken(u *model.User, key *rsa.PrivateKey, exp int64) (string, error) {
 	unixTime := jwt.NewNumericDate(time.Now())
 	tokenExp := jwt.NewNumericDate(unixTime.Add(time.Duration(exp) * time.Second)) // 15 minutes from current time
 
@@ -46,6 +47,11 @@ type RefreshToken struct {
 
 type RefreshTokenCustomClaims struct {
 	UID uuid.UUID `json:"uid"`
+	jwt.RegisteredClaims
+}
+
+type idTokenCustomClaims struct {
+	User *model.User `json:"user"`
 	jwt.RegisteredClaims
 }
 
@@ -81,4 +87,29 @@ func generateRefreshToken(uid uuid.UUID, key string, exp int64) (*RefreshToken, 
 		ID:        tokenID.String(),
 		ExpiresIn: tokenExp.Sub(currentTime),
 	}, nil
+}
+
+func validateIDToken(tokenString string, key *rsa.PublicKey) (*idTokenCustomClaims, error) {
+	claims := &idTokenCustomClaims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return key, nil
+	})
+
+	// For now we'll just return the error and handle logging in service level
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.Valid {
+		return nil, fmt.Errorf("ID token is invalid")
+	}
+
+	claims, ok := token.Claims.(*idTokenCustomClaims)
+
+	if !ok {
+		return nil, fmt.Errorf("ID token valid but couldn't parse claims")
+	}
+
+	return claims, nil
 }

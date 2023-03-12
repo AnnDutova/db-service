@@ -2,7 +2,6 @@ package mock
 
 import (
 	"context"
-
 	"github.com/stretchr/testify/mock"
 
 	"auth-service/api/pkg/model"
@@ -18,6 +17,23 @@ func (m *MockTokenService) NewToken(ctx context.Context, u *model.User, prevToke
 	var r0 *model.Token
 	if ret.Get(0) != nil {
 		r0 = ret.Get(0).(*model.Token)
+	}
+
+	var r1 error
+
+	if ret.Get(1) != nil {
+		r1 = ret.Get(1).(error)
+	}
+
+	return r0, r1
+}
+
+func (m *MockTokenService) ValidateIDToken(tokenString string) (*model.User, error) {
+	ret := m.Called(tokenString)
+
+	var r0 *model.User
+	if ret.Get(0) != nil {
+		r0 = ret.Get(0).(*model.User)
 	}
 
 	var r1 error

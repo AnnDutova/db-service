@@ -38,7 +38,7 @@ func NewTokenService(c *TSConfig) model.TokenService {
 }
 
 func (s *tokenService) NewToken(ctx context.Context, u *model.User, prevTokenID string) (*model.Token, error) {
-	idToken, err := generateIDToken(u, s.PrivateKey, s.IDExpirationSecs)
+	idToken, err := GenerateIDToken(u, s.PrivateKey, s.IDExpirationSecs)
 
 	if err != nil {
 		log.Printf("Error generating idToken for uid: %v. Error: %v\n", u.UID, err.Error())
@@ -68,4 +68,15 @@ func (s *tokenService) NewToken(ctx context.Context, u *model.User, prevTokenID 
 		IDToken:      idToken,
 		RefreshToken: refreshToken.SS,
 	}, nil
+}
+
+func (s *tokenService) ValidateIDToken(tokenString string) (*model.User, error) {
+	claims, err := validateIDToken(tokenString, s.PublicKey)
+
+	if err != nil {
+		log.Printf("Unable to validate or parse idToken - Error: %v\n", err)
+		return nil, model.UnauthorizedError("Unable to verify user from idToken")
+	}
+
+	return claims.User, nil
 }

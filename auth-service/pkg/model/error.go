@@ -30,10 +30,9 @@ func Status(err error) int {
 	return http.StatusInternalServerError
 }
 
-func UnauthorizedError(user int) *Error {
-	message := fmt.Sprintf("User %d unathorized", user)
+func UnauthorizedError(reason string) *Error {
 	status := http.StatusUnauthorized
-	return NewError(message, status)
+	return NewError(reason, status)
 }
 
 func BadRequestError(reason string) *Error {
@@ -62,5 +61,11 @@ func ConflictError(name string, value string) *Error {
 
 func NewUnsupportedMediaType(message string) *Error {
 	status := http.StatusUnsupportedMediaType
+	return NewError(message, status)
+}
+
+func NewServiceUnavailable() *Error {
+	status := http.StatusServiceUnavailable
+	message := fmt.Sprintf("Service unavailable or timed out")
 	return NewError(message, status)
 }

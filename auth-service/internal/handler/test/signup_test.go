@@ -1,6 +1,7 @@
-package handler
+package test
 
 import (
+	"auth-service/api/internal/handler"
 	"auth-service/api/pkg/model"
 	"auth-service/api/pkg/model/mock"
 	"bytes"
@@ -25,7 +26,7 @@ func TestSignup(t *testing.T) {
 
 		router := gin.Default()
 
-		NewHandler(&Config{
+		handler.NewHandler(&handler.Config{
 			R:           router,
 			UserService: mockUserService,
 		})
@@ -54,7 +55,7 @@ func TestSignup(t *testing.T) {
 
 		router := gin.Default()
 
-		NewHandler(&Config{
+		handler.NewHandler(&handler.Config{
 			R:           router,
 			UserService: mockUserService,
 		})
@@ -84,7 +85,7 @@ func TestSignup(t *testing.T) {
 
 		router := gin.Default()
 
-		NewHandler(&Config{
+		handler.NewHandler(&handler.Config{
 			R:           router,
 			UserService: mockUserService,
 		})
@@ -113,7 +114,7 @@ func TestSignup(t *testing.T) {
 
 		router := gin.Default()
 
-		NewHandler(&Config{
+		handler.NewHandler(&handler.Config{
 			R:           router,
 			UserService: mockUserService,
 		})
@@ -147,7 +148,7 @@ func TestSignup(t *testing.T) {
 
 		router := gin.Default()
 
-		NewHandler(&Config{
+		handler.NewHandler(&handler.Config{
 			R:           router,
 			UserService: mockUserService,
 		})
@@ -196,7 +197,7 @@ func TestSignup(t *testing.T) {
 		// don't need a middleware as we don't yet have authorized user
 		router := gin.Default()
 
-		NewHandler(&Config{
+		handler.NewHandler(&handler.Config{
 			R:            router,
 			UserService:  mockUserService,
 			TokenService: mockTokenService,
@@ -253,7 +254,7 @@ func TestSignup(t *testing.T) {
 		// don't need a middleware as we don't yet have authorized user
 		router := gin.Default()
 
-		NewHandler(&Config{
+		handler.NewHandler(&handler.Config{
 			R:            router,
 			UserService:  mockUserService,
 			TokenService: mockTokenService,

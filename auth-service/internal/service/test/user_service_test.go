@@ -1,6 +1,7 @@
-package service
+package test
 
 import (
+	"auth-service/api/internal/service"
 	"context"
 	"fmt"
 	"testing"
@@ -24,7 +25,7 @@ func TestGet(t *testing.T) {
 		}
 
 		mockUserRepository := new(mock.MockUserRepository)
-		us := NewUserService(&USConfig{
+		us := service.NewUserService(&service.USConfig{
 			UserRepository: mockUserRepository,
 		})
 		mockUserRepository.On("FindByID", mocks.Anything, uid).Return(mockUserResp, nil)
@@ -41,7 +42,7 @@ func TestGet(t *testing.T) {
 		uid, _ := uuid.NewRandom()
 
 		mockUserRepository := new(mock.MockUserRepository)
-		us := NewUserService(&USConfig{
+		us := service.NewUserService(&service.USConfig{
 			UserRepository: mockUserRepository,
 		})
 

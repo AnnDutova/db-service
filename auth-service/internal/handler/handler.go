@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"auth-service/api/internal/handler/middleware"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 
 	"auth-service/api/pkg/model"
 )
@@ -13,10 +15,11 @@ type Handler struct {
 }
 
 type Config struct {
-	R            *gin.Engine
-	UserService  model.UserService
-	TokenService model.TokenService
-	BaseURL      string
+	R               *gin.Engine
+	UserService     model.UserService
+	TokenService    model.TokenService
+	BaseURL         string
+	TimeoutDuration time.Duration
 }
 
 func NewHandler(c *Config) {
@@ -26,6 +29,13 @@ func NewHandler(c *Config) {
 	}
 
 	g := c.R.Group(c.BaseURL)
+
+	if gin.Mode() != gin.TestMode {
+		g.Use(middleware.Timeout(c.TimeoutDuration, model.NewServiceUnavailable()))
+		g.GET("/me", middleware.AuthUser(h.TokenService), h.Me)
+	} else {
+		g.GET("/me", h.Me)
+	}
 
 	g.GET("/ping", func(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{"pong": "test"})
@@ -38,13 +48,6 @@ func NewHandler(c *Config) {
 	g.POST("/image", h.Image)
 	g.DELETE("/image", h.DeleteImage)
 	g.PUT("/details", h.Details)
-}
-
-// Signin handler
-func (h *Handler) Signin(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"hello": "it's signin",
-	})
 }
 
 // Signout handler
