@@ -11,12 +11,30 @@ services:
       - "8000:8000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+  postgres-auth:
+    image: "postgres:alpine"
+    environment:
+      - POSTGRES_PASSWORD=pgpwd
+      - POSTGRES_USER=pguser
+      - POSTGRES_DB=testdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - "pgdata_auth:/var/lib/postgresql/data"
+      # - ./init:/docker-entrypoint-initdb.d/
+    command: [ "postgres", "-c", "log_statement=all" ]
+  redis-jwt:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+    volumes:
+      - "redisdata:/data"
   auth:
     build:
       context: ./auth-service
       target: builder
     image: auth
-    env_file: .env.dev
+    env_file: auth-service/config/.env.dev
     expose:
       - "8000"
     labels:
@@ -26,4 +44,10 @@ services:
       - ENV=dev
     volumes:
       - ./auth-service:/go/src/app
+    depends_on:
+      - postgres-auth
+      - redis-jwt
     command: reflex -r "\.go$$" -s -- sh -c "go run ./cmd/main.go"
+volumes:
+  pgdata_auth:
+  redisdata:

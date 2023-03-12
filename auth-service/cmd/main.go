@@ -9,13 +9,21 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-gonic/gin"
-
 	"auth-service/api/internal/handler"
+	"auth-service/api/internal/server"
 )
 
 func main() {
-	router := gin.Default()
+	ds, err := server.InitDS()
+
+	if err != nil {
+		log.Fatalf("Unable to initialize data sources %v", err)
+	}
+
+	router, err := server.Inject(ds)
+	if err != nil {
+		log.Fatalf("Unable to inject data sources %v", err)
+	}
 
 	handler.NewHandler(&handler.Config{
 		R: router,
@@ -40,6 +48,11 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
+	// shutdown data sources
+	if err := ds.Close(); err != nil {
+		log.Fatalf("A problem occurred gracefully shutting down data sources: %v\n", err)
+	}
 
 	log.Println("Shutting down server...")
 	if err := srv.Shutdown(ctx); err != nil {

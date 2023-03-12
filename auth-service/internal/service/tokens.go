@@ -15,9 +15,9 @@ type IDTokenCustomClaims struct {
 	jwt.RegisteredClaims
 }
 
-func generateIDToken(u *model.User, key *rsa.PrivateKey) (string, error) {
+func generateIDToken(u *model.User, key *rsa.PrivateKey, exp int64) (string, error) {
 	unixTime := jwt.NewNumericDate(time.Now())
-	tokenExp := jwt.NewNumericDate(unixTime.Add(time.Minute * 15)) // 15 minutes from current time
+	tokenExp := jwt.NewNumericDate(unixTime.Add(time.Duration(exp) * time.Second)) // 15 minutes from current time
 
 	claims := IDTokenCustomClaims{
 		User: u,
@@ -49,9 +49,9 @@ type RefreshTokenCustomClaims struct {
 	jwt.RegisteredClaims
 }
 
-func generateRefreshToken(uid uuid.UUID, key string) (*RefreshToken, error) {
+func generateRefreshToken(uid uuid.UUID, key string, exp int64) (*RefreshToken, error) {
 	currentTime := time.Now()
-	tokenExp := currentTime.AddDate(0, 0, 3) // 3 days
+	tokenExp := currentTime.Add(time.Duration(exp) * time.Second)
 	tokenID, err := uuid.NewRandom()
 
 	if err != nil {

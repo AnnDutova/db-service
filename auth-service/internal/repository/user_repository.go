@@ -1,4 +1,4 @@
-package crud
+package repository
 
 import (
 	"context"
@@ -41,7 +41,7 @@ func (r *pGUserRepository) FindByID(ctx context.Context, uid uuid.UUID) (*model.
 	user := &model.User{}
 
 	query := "SELECT * FROM users WHERE uid=$1"
-	
+
 	if err := r.DB.GetContext(ctx, user, query, uid); err != nil {
 		return user, model.NotFoundError("uid", uid.String())
 	}

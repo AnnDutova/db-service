@@ -12,7 +12,7 @@
 *.out
 
 .idea
-.env.dev
+auth-service/config/.env.dev
 *.pem
 
 # Dependency directories (remove the comment below to include it)

@@ -1,10 +1,8 @@
 package handler
 
 import (
-	"net/http"
-	"os"
-
 	"github.com/gin-gonic/gin"
+	"net/http"
 
 	"auth-service/api/pkg/model"
 )
@@ -18,6 +16,7 @@ type Config struct {
 	R            *gin.Engine
 	UserService  model.UserService
 	TokenService model.TokenService
+	BaseURL      string
 }
 
 func NewHandler(c *Config) {
@@ -26,7 +25,7 @@ func NewHandler(c *Config) {
 		TokenService: c.TokenService,
 	}
 
-	g := c.R.Group(os.Getenv("ACCOUNT_API_URL"))
+	g := c.R.Group(c.BaseURL)
 
 	g.GET("/ping", func(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{"pong": "test"})

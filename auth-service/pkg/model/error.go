@@ -59,3 +59,8 @@ func ConflictError(name string, value string) *Error {
 	status := http.StatusConflict
 	return NewError(message, status)
 }
+
+func NewUnsupportedMediaType(message string) *Error {
+	status := http.StatusUnsupportedMediaType
+	return NewError(message, status)
+}
