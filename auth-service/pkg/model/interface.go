@@ -14,6 +14,8 @@ type UserService interface {
 type TokenService interface {
 	NewToken(ctx context.Context, u *User, prevTokenID string) (*Token, error)
 	ValidateIDToken(tokenString string) (*User, error)
+	ValidateRefreshToken(tokenString string) (*RefreshToken, error)
+	Signout(ctx context.Context, uid uuid.UUID) error
 }
 
 type UserRepository interface {
@@ -25,4 +27,5 @@ type UserRepository interface {
 type TokenRepository interface {
 	SetRefreshToken(ctx context.Context, userID string, tokenID string, expiresIn time.Duration) error
 	DeleteRefreshToken(ctx context.Context, userID string, prevTokenID string) error
+	DeleteUserRefreshToken(ctx context.Context, userID string) error
 }

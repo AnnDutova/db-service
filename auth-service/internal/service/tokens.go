@@ -11,7 +11,7 @@ import (
 	"auth-service/api/pkg/model"
 )
 
-type IDTokenCustomClaims struct {
+type idTokenCustomClaims struct {
 	User *model.User `json:"user"`
 	jwt.RegisteredClaims
 }
@@ -20,7 +20,7 @@ func GenerateIDToken(u *model.User, key *rsa.PrivateKey, exp int64) (string, err
 	unixTime := jwt.NewNumericDate(time.Now())
 	tokenExp := jwt.NewNumericDate(unixTime.Add(time.Duration(exp) * time.Second)) // 15 minutes from current time
 
-	claims := IDTokenCustomClaims{
+	claims := idTokenCustomClaims{
 		User: u,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: tokenExp,
@@ -39,23 +39,18 @@ func GenerateIDToken(u *model.User, key *rsa.PrivateKey, exp int64) (string, err
 	return ss, nil
 }
 
-type RefreshToken struct {
+type refreshTokenData struct {
 	SS        string
-	ID        string
+	ID        uuid.UUID
 	ExpiresIn time.Duration
 }
 
-type RefreshTokenCustomClaims struct {
+type refreshTokenCustomClaims struct {
 	UID uuid.UUID `json:"uid"`
 	jwt.RegisteredClaims
 }
 
-type idTokenCustomClaims struct {
-	User *model.User `json:"user"`
-	jwt.RegisteredClaims
-}
-
-func generateRefreshToken(uid uuid.UUID, key string, exp int64) (*RefreshToken, error) {
+func generateRefreshToken(uid uuid.UUID, key string, exp int64) (*refreshTokenData, error) {
 	currentTime := time.Now()
 	tokenExp := currentTime.Add(time.Duration(exp) * time.Second)
 	tokenID, err := uuid.NewRandom()
@@ -65,7 +60,7 @@ func generateRefreshToken(uid uuid.UUID, key string, exp int64) (*RefreshToken, 
 		return nil, err
 	}
 
-	claims := RefreshTokenCustomClaims{
+	claims := refreshTokenCustomClaims{
 		UID: uid,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(currentTime),
@@ -82,9 +77,9 @@ func generateRefreshToken(uid uuid.UUID, key string, exp int64) (*RefreshToken, 
 		return nil, err
 	}
 
-	return &RefreshToken{
+	return &refreshTokenData{
 		SS:        ss,
-		ID:        tokenID.String(),
+		ID:        tokenID,
 		ExpiresIn: tokenExp.Sub(currentTime),
 	}, nil
 }
@@ -96,7 +91,6 @@ func validateIDToken(tokenString string, key *rsa.PublicKey) (*idTokenCustomClai
 		return key, nil
 	})
 
-	// For now we'll just return the error and handle logging in service level
 	if err != nil {
 		return nil, err
 	}
@@ -106,6 +100,30 @@ func validateIDToken(tokenString string, key *rsa.PublicKey) (*idTokenCustomClai
 	}
 
 	claims, ok := token.Claims.(*idTokenCustomClaims)
+
+	if !ok {
+		return nil, fmt.Errorf("ID token valid but couldn't parse claims")
+	}
+
+	return claims, nil
+}
+
+func validateRefreshToken(tokenString string, key string) (*refreshTokenCustomClaims, error) {
+	claims := &refreshTokenCustomClaims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(key), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.Valid {
+		return nil, fmt.Errorf("ID token is invalid")
+	}
+
+	claims, ok := token.Claims.(*refreshTokenCustomClaims)
 
 	if !ok {
 		return nil, fmt.Errorf("ID token valid but couldn't parse claims")

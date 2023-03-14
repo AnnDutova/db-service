@@ -31,12 +31,8 @@ func TestMe(t *testing.T) {
 		mockUserService := new(mock.MockUserService)
 		mockUserService.On("Get", mocks.AnythingOfType("*context.emptyCtx"), uid).Return(mockUserResp, nil)
 
-		// a response recorder for getting written http response
 		rr := httptest.NewRecorder()
 
-		// use a middleware to set context for test
-		// the only claims we care about in this test
-		// is the UID
 		router := gin.Default()
 		router.Use(func(c *gin.Context) {
 			c.Set("user", &model.User{

@@ -1,4 +1,4 @@
-package test
+package service
 
 import (
 	"context"
@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	mocks "github.com/stretchr/testify/mock"
 
-	"auth-service/api/internal/service"
 	"auth-service/api/pkg/model"
 	"auth-service/api/pkg/model/mock"
 )
@@ -21,15 +20,15 @@ func TestNewToken(t *testing.T) {
 	var idExp int64 = 15 * 60
 	var refreshExp int64 = 3 * 24 * 3600
 
-	priv, _ := os.ReadFile("../../../config/rsa_private_test.pem")
+	priv, _ := os.ReadFile("../../config/rsa_private_test.pem")
 	privKey, _ := jwt.ParseRSAPrivateKeyFromPEM(priv)
-	pub, _ := os.ReadFile("../../../config/rsa_public_test.pem")
+	pub, _ := os.ReadFile("../../config/rsa_public_test.pem")
 	pubKey, _ := jwt.ParseRSAPublicKeyFromPEM(pub)
 	secret := "anotsorandomtestsecret"
 
 	mockTokenRepository := new(mock.MockTokenRepository)
 
-	tokenService := service.NewTokenService(&service.TSConfig{
+	tokenService := NewTokenService(&TSConfig{
 		TokenRepository:       mockTokenRepository,
 		PrivateKey:            privKey,
 		PublicKey:             pubKey,
@@ -87,11 +86,11 @@ func TestNewToken(t *testing.T) {
 		mockTokenRepository.AssertCalled(t, "DeleteRefreshToken", deleteWithPrevIDArguments...)
 
 		var s string
-		assert.IsType(t, s, tokenPair.IDToken)
+		assert.IsType(t, s, tokenPair.IDToken.SS)
 
-		idTokenClaims := &service.IDTokenCustomClaims{}
+		idTokenClaims := &idTokenCustomClaims{}
 
-		_, err = jwt.ParseWithClaims(tokenPair.IDToken, idTokenClaims, func(token *jwt.Token) (interface{}, error) {
+		_, err = jwt.ParseWithClaims(tokenPair.IDToken.SS, idTokenClaims, func(token *jwt.Token) (interface{}, error) {
 			return pubKey, nil
 		})
 
@@ -118,12 +117,12 @@ func TestNewToken(t *testing.T) {
 		expectedExpiresAt := time.Now().Add(time.Duration(idExp) * time.Second)
 		assert.WithinDuration(t, expectedExpiresAt, expiresAt, 5*time.Second)
 
-		refreshTokenClaims := &service.RefreshTokenCustomClaims{}
-		_, err = jwt.ParseWithClaims(tokenPair.RefreshToken, refreshTokenClaims, func(token *jwt.Token) (interface{}, error) {
+		refreshTokenClaims := &refreshTokenCustomClaims{}
+		_, err = jwt.ParseWithClaims(tokenPair.RefreshToken.SS, refreshTokenClaims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(secret), nil
 		})
 
-		assert.IsType(t, s, tokenPair.RefreshToken)
+		assert.IsType(t, s, tokenPair.RefreshToken.SS)
 
 		// assert claims on refresh token
 		assert.NoError(t, err)
@@ -156,13 +155,13 @@ func TestNewToken(t *testing.T) {
 func TestValidateIDToken(t *testing.T) {
 	var idExp int64 = 15 * 60
 
-	priv, _ := os.ReadFile("../../../config/rsa_private_test.pem")
+	priv, _ := os.ReadFile("../../config/rsa_private_test.pem")
 	privKey, _ := jwt.ParseRSAPrivateKeyFromPEM(priv)
-	pub, _ := os.ReadFile("../../../config/rsa_public_test.pem")
+	pub, _ := os.ReadFile("../../config/rsa_public_test.pem")
 	pubKey, _ := jwt.ParseRSAPublicKeyFromPEM(pub)
 
 	// instantiate a common token service to be used by all tests
-	tokenService := service.NewTokenService(&service.TSConfig{
+	tokenService := NewTokenService(&TSConfig{
 		PrivateKey:       privKey,
 		PublicKey:        pubKey,
 		IDExpirationSecs: idExp,
@@ -178,9 +177,7 @@ func TestValidateIDToken(t *testing.T) {
 	}
 
 	t.Run("Valid token", func(t *testing.T) {
-		// maybe not the best approach to depend on utility method
-		// token will be valid for 15 minutes
-		ss, _ := service.GenerateIDToken(u, privKey, idExp)
+		ss, _ := GenerateIDToken(u, privKey, idExp)
 
 		uFromToken, err := tokenService.ValidateIDToken(ss)
 		assert.NoError(t, err)
@@ -195,7 +192,7 @@ func TestValidateIDToken(t *testing.T) {
 	t.Run("Expired token", func(t *testing.T) {
 		// maybe not the best approach to depend on utility method
 		// token will be valid for 15 minutes
-		ss, _ := service.GenerateIDToken(u, privKey, -1) // expires one second ago
+		ss, _ := GenerateIDToken(u, privKey, -1) // expires one second ago
 
 		expectedErr := model.UnauthorizedError("Unable to verify user from idToken")
 
@@ -206,7 +203,7 @@ func TestValidateIDToken(t *testing.T) {
 	t.Run("Invalid signature", func(t *testing.T) {
 		// maybe not the best approach to depend on utility method
 		// token will be valid for 15 minutes
-		ss, _ := service.GenerateIDToken(u, privKey, -1) // expires one second ago
+		ss, _ := GenerateIDToken(u, privKey, -1) // expires one second ago
 
 		expectedErr := model.UnauthorizedError("Unable to verify user from idToken")
 

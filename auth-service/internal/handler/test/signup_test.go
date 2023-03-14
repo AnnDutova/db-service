@@ -177,8 +177,8 @@ func TestSignup(t *testing.T) {
 		}
 
 		mockTokenResp := &model.Token{
-			IDToken:      "idToken",
-			RefreshToken: "refreshToken",
+			IDToken:      model.IDToken{SS: "idToken"},
+			RefreshToken: model.RefreshToken{SS: "refreshToken"},
 		}
 
 		mockUserService := new(mock.MockUserService)
