@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tables-config
+data:
+  init.sql: |
+    "Create user pguser with password 'pgpwd';
+    GRANT CONNECT on database "testdb" to pguser;
+    
+    create table if not exists "project" (
+     id serial primary key,
+     title text not null unique
+    );
+    
+    GRANT SELECT, INSERT, UPDATE, DELETE on table "project" to pguser;
+    "

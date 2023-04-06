@@ -15,5 +15,11 @@
 auth-service/config/.env.dev
 *.pem
 
+backup-restore/minio-data
+backup-restore/pgadmin
+backup-restore/pgdata
+
+*.dump
+
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/

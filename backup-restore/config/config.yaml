@@ -1,0 +1,15 @@
+DB:
+  dbHost: "localhost"
+  dbPort: "5432"
+  dbName: "testdb"
+  dbUsername: "pguser"
+  dbPassword: "pgpwd"
+  containerName: "postgres_container"
+
+Minio:
+  minioEndpoint: "localhost"
+  minioPort: "9000"
+  minioAccessKey: "test-access-key"
+  minioSecretKey: "test-access-key"
+  minioSSL: "false"
+  minioBucket: "backups"

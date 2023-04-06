@@ -1,0 +1,38 @@
+version: "3.9"
+services:
+  minio:
+    container_name: minio
+    image: minio/minio:latest
+    environment:
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    volumes:
+      - ./minio-data:/data
+    ports:
+    - "9000:9000"
+    - "9001:9001"
+    command: server /data --console-address ":9001"
+
+  minio-mc:
+    container_name: minio-client
+    image: minio/mc:latest
+    environment:
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - BUCKET_NAME=backups
+      - ENDPOINT=http://minio:9000
+    entrypoint: >
+      /bin/sh -c "
+      sleep 10;
+      /usr/bin/mc config host add minio http://minio:9000 minioadmin minioadmin;
+      /usr/bin/mc mb minio/backups;
+      /usr/bin/mc policy set public minio/backups;
+      exit 0;
+      "
+    depends_on:
+    - minio
+
+volumes:
+  minio-data:
