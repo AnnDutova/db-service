@@ -1,0 +1,15 @@
+{
+  "data_dir": "/consul/data",
+  "log_level": "DEBUG",
+  "retry_join": ["consul"],
+  "server": true,
+  "bootstrap_expect" : 3,
+  "client_addr": "0.0.0.0",
+  "ui": true,
+  "watches": [
+    {
+      "type": "checks",
+      "handler": "/usr/bin/health-check-handler.sh"
+    }
+  ]
+}

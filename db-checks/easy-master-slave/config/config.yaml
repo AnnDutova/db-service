@@ -1,0 +1,12 @@
+DB-master:
+  dbHost: "db-master"
+  dbPort: "5432"
+
+DB-slave:
+  dbHost: "db-slave"
+  dbPort: "5432"
+
+DB-common:
+  dbName: "testdb"
+  dbUsername: "pguser"
+  dbPassword: "pgpwd"

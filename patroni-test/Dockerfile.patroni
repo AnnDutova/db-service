@@ -1,0 +1,27 @@
+FROM postgres:15
+
+RUN apt-get update && \
+    apt-get install -y python curl postgresql-client jq locales git python3-pip python3-wheel libpq-dev &&  \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir patroni[consul]==2.0.1
+
+RUN pip3 install setuptools \
+    && PGHOME=/home/postgres \
+    && mkdir -p $PGHOME \
+    && chown postgres $PGHOME \
+    && sed -i "s|/var/lib/postgresql.*|$PGHOME:/bin/bash|" /etc/passwd
+
+COPY requirements.txt /requirements.txt
+RUN pip3 install -r /requirements.txt
+
+ADD db-init-scripts/ /docker-entrypoint-initdb.d/
+
+COPY entrypoint.sh /
+
+EXPOSE 5432 8008
+ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 EDITOR=/usr/bin/editor
+USER postgres
+WORKDIR /home/postgres
+CMD ["/bin/bash", "/entrypoint.sh"]

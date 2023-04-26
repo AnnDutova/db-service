@@ -43,9 +43,9 @@ func main() {
 	}
 
 	if isBackup {
-		if err = provider.AddNewProject(); err != nil {
+		/*if err = provider.AddNewProject(); err != nil {
 			panic(err)
-		}
+		}*/
 		backup := backup.NewBackupManager(provider, minio)
 		if err = backup.MakeDump(); err != nil {
 			panic(err)

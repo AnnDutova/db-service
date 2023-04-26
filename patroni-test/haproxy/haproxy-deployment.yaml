@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: haproxy
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: haproxy
+  template:
+    metadata:
+      labels:
+        app: haproxy
+    spec:
+      containers:
+        - name: container-haproxy
+          image: haproxy-cfg
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: write
+              containerPort: 5432
+            - name: read
+              containerPort: 5433
+            - name: admin
+              containerPort: 1000

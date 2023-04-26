@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: patroni-config
+data:
+  patroni.yml: |-
+    scope: postgres
+    name: postgresql15
+    restapi:
+      listen: 127.0.0.0:8008
+      connect_address: $PRIVATE_IP:8008
+      auth: trust
+    consul:
+      host: consul
+      port: 8500
+      protocol: http
+    bootstrap:
+      dcs:
+        ttl: 30
+        loop_wait: 10
+        retry_timeout: 10
+        maximum_lag_on_failover: 1048576
+        postgresql:
+          use_pg_rewind: true
+          parameters:
+            wal_level: hot_standby
+            hot_standby: "on"
+            max_connections: 100
+            max_worker_processes: 8
+            wal_keep_segments: 8
+            max_wal_senders: 10
+            max_replication_slots: 10
+            max_prepared_transactions: 0
+            max_locks_per_transaction: 64
+            wal_log_hints: "on"
+            track_commit_timestamp: "off"
+            archive_mode: "on"
+            archive_timeout: 1800s
+            archive_command: mkdir -p ../wal_archive && test ! -f ../wal_archive/%f && cp %p ../wal_archive/%f
+          recovery_conf:
+            restore_command: cp ../wal_archive/%f %p
+      initdb:
+      - encoding: UTF8
+      - data-checksums
+      pg_hba: 
+      - host replication replicator 127.0.0.1/32 md5
+      - host all all 0.0.0.0/0 md5
+      - host all all 127.0.0.1/32 trust
+      users:
+        admin:
+          password: admin
+          options:
+            - createrole
+            - createdb
+    postgresql:
+      listen: $PRIVATE_IP:5432
+      connect_address: $PRIVATE_IP:5432
+      data_dir: /var/lib/postgresql/15/main
+      bin_dir: /usr/lib/postgresql/15/bin
+      authentication:
+        replication:
+          username: replicator
+          password: replicator
+        superuser:
+          username: postgres
+          password: postgres
+      callbacks:
+        on_start: /etc/patroni/postgresql/on_start.sh
+        on_stop: /etc/patroni/postgresql/on_stop.sh
+        on_restart: /etc/patroni/postgresql/on_restart.sh
+        on_role_change: /etc/patroni/postgresql/on_role_change.sh
+      parameters: 
+        unix_socket_directories: '..'
+    tags:
+        nofailover: false
+        noloadbalance: false
+        clonefrom: false
+        nosync: false
