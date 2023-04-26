@@ -58,4 +58,16 @@ patroni-test:
 	kubectl apply -f patroni-conf.yaml
 	kubectl apply -f sts.yaml
 
+monit:
+	kubectl get all
+	kubectl apply -f monitoring/monitoring.yml
+	kubectl apply -f monitoring/pv.yaml
+	kubectl apply -f monitoring/pvc.yaml
+	kubectl apply -f monitoring/cluster-role.yaml
+	kubectl apply -f monitoring/service-account.yaml
+	kubectl apply -f monitoring/cluster-role-binding.yaml
+	kubectl apply -f monitoring/configmap.yaml
+	kubectl apply -f monitoring/deployment.yaml
+	kubectl get all -n monitoring
+
 .PHONY: patroni-run
