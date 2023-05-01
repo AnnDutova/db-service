@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: prometheus-service
+  name: grafana
   namespace: default
   annotations:
     prometheus.io/scrape: 'true'
-    prometheus.io/port:   '9090'
+    prometheus.io/port:   '3000'
 spec:
   selector:
-    app: prometheus-server
+    app: grafana
   type: NodePort
   ports:
-    - port: 8080
-      targetPort: 9090
-      nodePort: 30000
+    - port: 3000
+      targetPort: 3000
+      nodePort: 32000

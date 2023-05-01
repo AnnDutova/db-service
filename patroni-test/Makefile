@@ -60,14 +60,16 @@ patroni-test:
 
 monit:
 	kubectl get all
-	kubectl apply -f monitoring/monitoring.yml
-	kubectl apply -f monitoring/pv.yaml
-	kubectl apply -f monitoring/pvc.yaml
 	kubectl apply -f monitoring/cluster-role.yaml
-	kubectl apply -f monitoring/service-account.yaml
 	kubectl apply -f monitoring/cluster-role-binding.yaml
 	kubectl apply -f monitoring/configmap.yaml
 	kubectl apply -f monitoring/deployment.yaml
+	kubectl apply -f monitoring/service.yaml
+	kubectl apply -f monitoring/secret.yaml
+	kubectl apply -f monitoring/ingress.yaml
+	kubectl apply -f monitoring/grafana/config.yaml
+	kubectl apply -f monitoring/grafana/deployment.yaml
+	kubectl apply -f monitoring/grafana/service.yaml
 	kubectl get all -n monitoring
 
 .PHONY: patroni-run
